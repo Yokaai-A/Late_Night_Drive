@@ -5,33 +5,43 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 const SEGMENT_LENGTH = 200;
-const SEGMENT_COUNT = 3;
+const SEGMENT_COUNT = 5;
 
 type EnvironmentProps = {
-  speed: number;
+  carRef: React.RefObject<THREE.Group | null>;
 };
 
 export default function Environment({
-  speed,
+  carRef,
 }: EnvironmentProps) {
   const environmentRef = useRef<THREE.Group>(null);
 
-  useFrame((_, delta) => {
+  useFrame(() => {
     if (!environmentRef.current) return;
+    if (!carRef.current) return;
 
-    environmentRef.current.children.forEach((segment) => {
-      segment.position.z -= speed * delta;
+    const carZ = carRef.current.position.z;
 
-      if (segment.position.z < -SEGMENT_LENGTH) {
-        segment.position.z +=
-          SEGMENT_LENGTH * SEGMENT_COUNT;
+    environmentRef.current.children.forEach(
+      (segment) => {
+        // Kalau tanah sudah jauh di belakang mobil,
+        // pindahkan ke depan.
+        if (
+          segment.position.z <
+          carZ - SEGMENT_LENGTH
+        ) {
+          segment.position.z +=
+            SEGMENT_LENGTH * SEGMENT_COUNT;
+        }
       }
-    });
+    );
   });
 
   return (
     <group ref={environmentRef}>
-      {Array.from({ length: SEGMENT_COUNT }).map((_, i) => (
+      {Array.from({
+        length: SEGMENT_COUNT,
+      }).map((_, i) => (
         <GroundSegment
           key={i}
           z={i * SEGMENT_LENGTH}
@@ -41,16 +51,20 @@ export default function Environment({
   );
 }
 
-function GroundSegment({ z }: { z: number }) {
+function GroundSegment({
+  z,
+}: {
+  z: number;
+}) {
   return (
-    <group position={[0, -1.20, z]}>
-
+    <group position={[0, -1.2, z]}>
       {/* Tanah kiri */}
       <mesh
         position={[-14, -0.03, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
       >
         <planeGeometry args={[20, SEGMENT_LENGTH]} />
+
         <meshStandardMaterial
           color="#315c2b"
           roughness={1}
@@ -63,12 +77,12 @@ function GroundSegment({ z }: { z: number }) {
         rotation={[-Math.PI / 2, 0, 0]}
       >
         <planeGeometry args={[20, SEGMENT_LENGTH]} />
+
         <meshStandardMaterial
           color="#315c2b"
           roughness={1}
         />
       </mesh>
-
     </group>
   );
 }

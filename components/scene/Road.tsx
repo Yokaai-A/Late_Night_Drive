@@ -5,31 +5,43 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 const SEGMENT_LENGTH = 200;
-const SEGMENT_COUNT = 3;
+const SEGMENT_COUNT = 5;
 
 type RoadProps = {
-  speed: number;
+  carRef: React.RefObject<THREE.Group | null>;
 };
 
-export default function Road({ speed }: RoadProps) {
+export default function Road({
+  carRef,
+}: RoadProps) {
   const roadRef = useRef<THREE.Group>(null);
 
-  useFrame((_, delta) => {
+  useFrame(() => {
     if (!roadRef.current) return;
+    if (!carRef.current) return;
 
-    roadRef.current.children.forEach((segment) => {
-        segment.position.z -= speed * delta;
+    const carZ = carRef.current.position.z;
 
-        while (segment.position.z < -SEGMENT_LENGTH) {
-        segment.position.z +=
+    roadRef.current.children.forEach(
+      (segment) => {
+        // Kalau segment sudah terlalu jauh
+        // di belakang mobil
+        if (
+          segment.position.z <
+          carZ - SEGMENT_LENGTH
+        ) {
+          segment.position.z +=
             SEGMENT_LENGTH * SEGMENT_COUNT;
         }
-    });
+      }
+    );
   });
 
   return (
     <group ref={roadRef}>
-      {Array.from({ length: SEGMENT_COUNT }).map((_, i) => (
+      {Array.from({
+        length: SEGMENT_COUNT,
+      }).map((_, i) => (
         <RoadSegment
           key={i}
           z={i * SEGMENT_LENGTH}
@@ -39,15 +51,34 @@ export default function Road({ speed }: RoadProps) {
   );
 }
 
-function RoadSegment({ z }: { z: number }) {
+function RoadSegment({
+  z,
+}: {
+  z: number;
+}) {
   const MARK_SPACING = 5;
-const MARK_COUNT = Math.ceil(SEGMENT_LENGTH / MARK_SPACING);
+
+  const MARK_COUNT = Math.ceil(
+    SEGMENT_LENGTH / MARK_SPACING
+  );
 
   return (
-    <group position={[0, -1.10, z]}>
-      {/* Aspal */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[8, SEGMENT_LENGTH]} />
+    <group position={[0, -1.1, z]}>
+      {/* ASPAL */}
+
+      <mesh
+        rotation={[
+          -Math.PI / 2,
+          0,
+          0,
+        ]}
+      >
+        <planeGeometry
+          args={[
+            15,
+            SEGMENT_LENGTH,
+          ]}
+        />
 
         <meshStandardMaterial
           color="#161616"
@@ -55,22 +86,63 @@ const MARK_COUNT = Math.ceil(SEGMENT_LENGTH / MARK_SPACING);
         />
       </mesh>
 
-      {/* Marka tengah */}
-      {Array.from({ length: MARK_COUNT }).map((_, i) => (
-        <mesh
-          key={i}
-          position={[
-            0,                         // X
-            0.011,                     // sedikit di atas aspal
-            -SEGMENT_LENGTH / 2 + i * 5,
-          ]}
-          rotation={[-Math.PI / 2, 0, 0]}
-        >
-          <planeGeometry args={[0.12, 2.5]} />
+      {/* MARKA TENGAH */}
 
-          <meshStandardMaterial color="#eeeeee" />
-        </mesh>
-      ))}
+      {Array.from({
+        length: MARK_COUNT,
+      }).map((_, i) => {
+        const markZ =
+          -SEGMENT_LENGTH / 2 +
+          i * MARK_SPACING;
+
+        return (
+          <group key={i}>
+            {/* Garis kiri */}
+            <mesh
+              position={[
+                -0.12,
+                0.011,
+                markZ,
+              ]}
+              rotation={[
+                -Math.PI / 2,
+                0,
+                0,
+              ]}
+            >
+              <planeGeometry
+                args={[0.08, 2.5]}
+              />
+
+              <meshStandardMaterial
+                color="#e8d76b"
+              />
+            </mesh>
+
+            {/* Garis kanan */}
+            <mesh
+              position={[
+                0.12,
+                0.011,
+                markZ,
+              ]}
+              rotation={[
+                -Math.PI / 2,
+                0,
+                0,
+              ]}
+            >
+              <planeGeometry
+                args={[0.08, 2.5]}
+              />
+
+              <meshStandardMaterial
+                color="#e8d76b"
+              />
+            </mesh>
+          </group>
+        );
+      })}
     </group>
   );
 }

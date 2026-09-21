@@ -7,7 +7,8 @@ import * as THREE from "three";
 import EditorCamera from "./EditorCamera";
 import Road from "./Road";
 import Environment from "./Environment";
-
+import DrivingController from "./DrivingController";
+import World from "./World";
 
 import Model from "./Model";
 
@@ -15,6 +16,7 @@ function DriverCamera() {
   const { camera } = useThree();
 
   useEffect(() => {
+    // Posisi POV relatif terhadap mobil
     camera.position.set(
       0.8896958669814655,
       1.4718028313774438,
@@ -30,7 +32,7 @@ function DriverCamera() {
     camera.updateProjectionMatrix();
   }, [camera]);
 
-  return null;
+  return <primitive object={camera} />;
 }
 
 function Scene() {
@@ -38,7 +40,8 @@ function Scene() {
   const instrumentRef = useRef<THREE.Group>(null);
   const radioRef = useRef<THREE.Group>(null);
   const mirrorRef = useRef<THREE.Group>(null);
-  const speed = 10;
+  const speedRef = useRef(0);
+  const carRef = useRef<THREE.Group>(null);
 
   return (
     <>
@@ -46,10 +49,13 @@ function Scene() {
         <directionalLight position={[5, 5, 5]} intensity={3} />
 
         {/* Semua bagian mobil */}
-        <group position={[0, 0, 0]}>
+        <group
+            ref={carRef}
+            position={[3, 0, 0]}
+        >
         
         {/* Mobil */}
-        <Model path="/models/car.glb" />
+        <Model path="/models/car_steering.glb" />
 
         {/* Instrument cluster - JANGAN UBAH */}
         <group
@@ -75,6 +81,9 @@ function Scene() {
             </Center>
         </group>
 
+         {/* Kamera driver */}
+  <DriverCamera />
+
         {/* Rear View Mirror */}
         <group
             ref={mirrorRef}
@@ -87,10 +96,17 @@ function Scene() {
             </Center>
         </group>
       </group>
-    <Road speed={speed} />
-    <Environment speed={speed} />
-      {/* <DriverCamera/> */}
-      <EditorCamera />
+      {/* Dunia */}
+      {/* <Road carRef={carRef}/> */}
+      {/* <Environment carRef={carRef} /> */}
+      <World carRef={carRef} />
+
+      {/* Controller */}
+      <DrivingController
+        speedRef={speedRef}
+        carRef={carRef}
+      />
+      {/* <EditorCamera /> */}
     </>
   );
 }
