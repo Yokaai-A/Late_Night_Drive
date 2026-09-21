@@ -89,8 +89,8 @@ function Scene() {
       </group>
     <Road speed={speed} />
     <Environment speed={speed} />
-    <DriverCamera/>
-    {/* <EditorCamera/> */}
+      {/* <DriverCamera/> */}
+      <EditorCamera />
     </>
   );
 }
