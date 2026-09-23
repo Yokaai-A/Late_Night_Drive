@@ -51,7 +51,7 @@ function Scene() {
         {/* Semua bagian mobil */}
         <group
             ref={carRef}
-            position={[3, 0, 0]}
+            position={[4, 0, 0]}
         >
         
         {/* Mobil */}
@@ -102,11 +102,11 @@ function Scene() {
       <World carRef={carRef} />
 
       {/* Controller */}
-      <DrivingController
+      {/* <DrivingController
         speedRef={speedRef}
         carRef={carRef}
-      />
-      {/* <EditorCamera /> */}
+      /> */}
+      <EditorCamera />
     </>
   );
 }
